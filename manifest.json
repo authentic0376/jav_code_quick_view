@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Image Search Tooltip",
+  "version": "1.0",
+  "description": "Hover over text to recognize product codes and display Google Image search results in a tooltip.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.google.com/"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "image-tooltip-extension@example.com"
+    }
+  },
+  "action": {
+    "default_icon": {
+      "48": "icon.png"
+    },
+    "default_title": "Open Image Search Tooltip Settings",
+    "default_popup": "options.html"
+  }
+}
