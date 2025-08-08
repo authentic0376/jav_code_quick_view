@@ -1,29 +1,60 @@
-// Variables for the tooltip
+// Global state
+let isEnabled = true;
+let patterns = [];
 let tooltip;
 let tooltipTimeout;
 
-// Load saved patterns and create an array of regular expressions
-let patterns = [];
-browser.storage.local.get('patterns').then(result => {
-    const savedPatterns = result.patterns || ['[A-Z]{2,5}-[0-9]{3,5}']; // Default pattern
-    patterns = savedPatterns.map(p => new RegExp(p, 'i'));
-});
+// Main function to attach event listeners
+function initializeContentScript() {
+    console.log("Content: Initializing script...");
+    document.body.addEventListener('mouseover', handleMouseOver);
+    browser.runtime.onMessage.addListener(handleBackgroundMessage);
+}
 
-// Update patterns in real-time when changes are made in storage
+// Function to tear down event listeners and hide UI
+function teardownContentScript() {
+    console.log("Content: Tearing down script...");
+    document.body.removeEventListener('mouseover', handleMouseOver);
+    // It's tricky to remove a specific message listener, but for now, we rely on the isEnabled flag
+    hideTooltip();
+}
+
+// Check the extension's state before initializing
+browser.storage.local.get({ isEnabled: true, patterns: ['[A-Z]{2,5}-[0-9]{3,5}'] })
+    .then(result => {
+        isEnabled = result.isEnabled;
+        patterns = result.patterns.map(p => new RegExp(p, 'i'));
+        if (isEnabled) {
+            initializeContentScript();
+        } else {
+            console.log("Content: Extension is disabled. Script not initialized.");
+        }
+    });
+
+// Listen for changes in storage to enable/disable the script on the fly
 browser.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.patterns) {
-        patterns = changes.patterns.newValue.map(p => new RegExp(p, 'i'));
+    if (area === 'local') {
+        if (changes.isEnabled) {
+            isEnabled = changes.isEnabled.newValue;
+            if (isEnabled) {
+                initializeContentScript();
+            } else {
+                teardownContentScript();
+            }
+        }
+        if (changes.patterns) {
+            patterns = changes.patterns.newValue.map(p => new RegExp(p, 'i'));
+        }
     }
 });
 
 // Function to run when the mouse hovers over a link
-document.body.addEventListener('mouseover', (e) => {
-    if (e.target.tagName !== 'A' || !e.target.textContent) return;
+function handleMouseOver(e) {
+    if (!isEnabled || e.target.tagName !== 'A' || !e.target.textContent) return;
 
     const linkText = e.target.textContent.trim();
     let matchedCode = null;
 
-    // Check if there is a code that matches the saved patterns
     for (const regex of patterns) {
         const match = linkText.match(regex);
         if (match) {
@@ -33,16 +64,14 @@ document.body.addEventListener('mouseover', (e) => {
     }
 
     if (matchedCode) {
-        // Delay tooltip creation
         tooltipTimeout = setTimeout(() => {
             console.log(`Content: Code '${matchedCode}' recognized. Requesting tooltip creation.`);
             createTooltip(matchedCode);
         }, 500); // 0.5 second delay
 
-        // Hide the tooltip when the mouse leaves
         e.target.addEventListener('mouseout', hideTooltip, { once: true });
     }
-});
+}
 
 // Creates the tooltip and requests an image search
 function createTooltip(code) {
@@ -53,7 +82,6 @@ function createTooltip(code) {
     tooltip.innerHTML = `<div class="tooltip-loading"><span>'${code}'</span> Searching...</div>`;
     document.body.appendChild(tooltip);
 
-    // Send a search message to the background script
     console.log(`Content: Sending search message for '${code}' to background.`);
     browser.runtime.sendMessage({ query: code });
 }
@@ -67,8 +95,10 @@ function hideTooltip() {
     }
 }
 
-// Receives image URLs from the background and displays them in the tooltip
-browser.runtime.onMessage.addListener((message) => {
+// Receives image URLs from the background and displays them
+function handleBackgroundMessage(message) {
+    if (!isEnabled) return;
+
     console.log("Content: Message received from background:", message);
     if (message.imageUrls && tooltip) {
         if (message.imageUrls.length > 0) {
@@ -91,4 +121,4 @@ browser.runtime.onMessage.addListener((message) => {
             tooltip.innerHTML = `<div class="tooltip-loading">Images not found.</div>`;
         }
     }
-});
+}

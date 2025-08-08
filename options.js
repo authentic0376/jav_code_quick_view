@@ -1,9 +1,51 @@
+// -- DOM Elements --
 const patternList = document.getElementById('pattern-list');
 const newPatternInput = document.getElementById('new-pattern');
 const addButton = document.getElementById('add-btn');
+const toggleButton = document.getElementById('toggle-enabled-btn');
+const statusMessage = document.getElementById('status-message');
+
+// -- State Management --
+
+// Load and display enabled/disabled status
+function restoreStatus() {
+    browser.storage.local.get({ isEnabled: true }).then(result => {
+        updateStatusUI(result.isEnabled);
+    }, console.error);
+}
+
+// Update button and text to reflect current status
+function updateStatusUI(isEnabled) {
+    if (isEnabled) {
+        toggleButton.textContent = 'Disable Extension';
+        toggleButton.style.backgroundColor = '#e74c3c'; // Red for disable action
+        statusMessage.textContent = 'Extension is currently enabled.';
+        statusMessage.style.color = '#27ae60'; // Green
+    } else {
+        toggleButton.textContent = 'Enable Extension';
+        toggleButton.style.backgroundColor = '#2ecc71'; // Green for enable action
+        statusMessage.textContent = 'Extension is currently disabled.';
+        statusMessage.style.color = '#c0392b'; // Red
+    }
+}
+
+// Toggle the enabled/disabled state
+toggleButton.addEventListener('click', () => {
+    browser.storage.local.get({ isEnabled: true }).then(result => {
+        const newIsEnabled = !result.isEnabled;
+        browser.storage.local.set({ isEnabled: newIsEnabled }).then(() => {
+            updateStatusUI(newIsEnabled);
+            // Notify background script to update the icon immediately
+            browser.runtime.sendMessage({ action: "updateIcon" });
+        });
+    });
+});
+
+
+// -- Pattern Management --
 
 // Loads saved patterns and displays them on the screen
-function restoreOptions() {
+function restorePatterns() {
     browser.storage.local.get('patterns').then(result => {
         const patterns = result.patterns || ['[A-Z]{2,5}-[0-9]{3,5}']; // Default pattern
         patternList.innerHTML = ''; // Clear the list
@@ -16,7 +58,7 @@ function restoreOptions() {
 }
 
 // Saves the patterns
-function saveOptions(patterns) {
+function savePatterns(patterns) {
     browser.storage.local.set({ patterns });
 }
 
@@ -27,9 +69,9 @@ addButton.addEventListener('click', () => {
         browser.storage.local.get('patterns').then(result => {
             const patterns = result.patterns || ['[A-Z]{2,5}-[0-9]{3,5}'];
             patterns.push(newPattern);
-            saveOptions(patterns);
+            savePatterns(patterns);
             newPatternInput.value = ''; // Clear the input field
-            restoreOptions(); // Refresh the list
+            restorePatterns(); // Refresh the list
         });
     }
 });
@@ -41,11 +83,14 @@ patternList.addEventListener('click', (e) => {
         browser.storage.local.get('patterns').then(result => {
             const patterns = result.patterns || ['[A-Z]{2,5}-[0-9]{3,5}'];
             patterns.splice(indexToDelete, 1);
-            saveOptions(patterns);
-            restoreOptions(); // Refresh the list
+            savePatterns(patterns);
+            restorePatterns(); // Refresh the list
         });
     }
 });
 
-// Restore options when the page loads
-document.addEventListener('DOMContentLoaded', restoreOptions);
+// -- Initialization --
+document.addEventListener('DOMContentLoaded', () => {
+    restoreStatus();
+    restorePatterns();
+});

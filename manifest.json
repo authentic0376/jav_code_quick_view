@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Image Search Tooltip",
-  "version": "1.0",
-  "description": "Hover over text to recognize product codes and display Google Image search results in a tooltip.",
+  "name": "JAV Code Quick-View",
+  "version": "1.1",
+  "description": "Recognizes JAV codes on pages and displays image search results in a sidebar.",
   "permissions": [
     "storage",
     "activeTab"
@@ -31,9 +31,9 @@
   },
   "action": {
     "default_icon": {
-      "48": "icon.png"
+      "48": "icon.svg"
     },
-    "default_title": "Open Image Search Tooltip Settings",
+    "default_title": "JAV Code Quick-View Settings",
     "default_popup": "options.html"
   }
 }
