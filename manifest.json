@@ -15,6 +15,11 @@
       "48": "icon.svg"
     }
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "image-tooltip-extension@example.com"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
