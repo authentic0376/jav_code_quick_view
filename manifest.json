@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JAV Code Quick-View",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Recognizes JAV codes on pages and displays image search results in a sidebar.",
   "permissions": [
     "storage",

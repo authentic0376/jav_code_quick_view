@@ -38,6 +38,25 @@ To load this extension for development or testing:
 
 The extension icon will now appear in your Firefox toolbar.
 
+## Packaging & Deployment
+
+To publish a new version to the Mozilla Add-ons (AMO) store:
+
+1.  **Update Version:**
+    Open `manifest.json` and increment the `version` number (e.g., change `"1.1"` to `"1.2"`).
+
+2.  **Create Package:**
+    Select the necessary files (`manifest.json`, `.js` files, `.html` files, `.css` files, and icons) and compress them into a `.zip` file.
+
+    > **Note:** Do not include development files such as `.git/`, `.pagrignore`, or `README.md` in the zip archive.
+
+3.  **Upload to AMO:**
+    1.  Log in to the [Mozilla Add-on Developer Hub](https://addons.mozilla.org/developers/).
+    2.  Select the extension from your list.
+    3.  Click **"Upload New Version"** and select your `.zip` file.
+    4.  Wait for validation, add release notes (e.g., "Fixed image parsing logic"), and submit.
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE.md file for details.
+
