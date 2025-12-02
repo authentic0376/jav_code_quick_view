@@ -1,0 +1,19 @@
+# pagr이 항상 무시할 패턴을 추가합니다. .gitignore와 유사하게 동작합니다.
+# 여기에 작성된 규칙은 .gitignore 규칙 이후에 적용됩니다.
+#
+# '!' 접두사를 사용하여 무시 규칙을 재정의할 수 있습니다.
+# 예를 들어, .gitignore에서 'logs/'를 무시하더라도, 여기서 '!logs/important.log'를
+# 추가하면 해당 파일은 취합 대상에 포함됩니다.
+#
+# --- 예시 ---
+# build/
+# dist/
+#
+# # 'dist' 폴더 내의 특정 파일만 예외적으로 포함
+# !dist/critical.js
+
+*.pyc
+.venv/
+.idea/
+*.svg
+*.png
